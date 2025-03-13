@@ -24,3 +24,15 @@ class Administradores(models.Model):
         return "Perfil del admin "+self.first_name+" "+self.last_name
     
 #TODO: A partir de aquí deben de definir ustedes sus modelos para alumnos y maestros
+
+class Alumnos(models.Model):
+    #TODO:Definir modelo de alumnos
+
+    def __str__(self):
+        return "Perfil del alumno "+self.first_name+" "+self.last_name
+    
+class Maestros(models.Model):
+    #TODO:Definir modelo de alumnos
+
+    def __str__(self):
+        return "Perfil del alumno "+self.first_name+" "+self.last_name
