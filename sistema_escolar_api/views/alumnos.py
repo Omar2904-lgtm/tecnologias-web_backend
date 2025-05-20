@@ -30,15 +30,31 @@ import string
 import random
 import json
 
-class AlumnosView(generics.CreateAPIView):
-    #Obtener usuario por ID
-    # permission_classes = (permissions.IsAuthenticated,)
-    def get(self, request, *args, **kwargs):
-        alumno = get_object_or_404(Alumnos, id = request.GET.get("id"))
-        alumno = AlumnoSerializer(alumno, many=False).data
 
+
+class AlumnosAll(generics.CreateAPIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    def get(self, request, *args, **kwargs):
+        alumnos = Alumnos.objects.filter(user__is_active = 1).order_by("id")
+        alumnos = AlumnoSerializer(alumnos, many=True).data
+
+        return Response(alumnos, 200)
+
+
+
+# class Userme(generics.CreateAPIView):
+    # permission_classes = (permissions.IsAuthenticated,)
+    # def get(self, request, *args, **kwargs):
+        # user = request.user
+        # TODO: Regresar perfil del usuario
+        # return Response({})
+
+class AlumnosView(generics.CreateAPIView):
+    def get(self, request, *args, **kwargs):
+        alumno= get_object_or_404(Alumnos, id = request.GET.get("id"))
+        alumno = AlumnoSerializer(alumno, many=False).data
+        
         return Response(alumno, 200)
-    
     #Registrar nuevo usuario
     @transaction.atomic
     def post(self, request, *args, **kwargs):
@@ -65,24 +81,62 @@ class AlumnosView(generics.CreateAPIView):
 
 
             user.save()
-            user.set_password(password)
+            user.set_password(password) #Cifrar la contraseña
             user.save()
 
             group, created = Group.objects.get_or_create(name=role)
             group.user_set.add(user)
             user.save()
 
-            #Create a profile for the user
+            #Almacenar los datos adicionales del administrador
             alumno = Alumnos.objects.create(user=user,
-                                            matricula= request.data["matricula"],
-                                            curp= request.data["curp"].upper(),
-                                            rfc= request.data["rfc"].upper(),
-                                            fecha_nacimiento= request.data["fecha_nacimiento"],
-                                            edad= request.data["edad"],
-                                            telefono= request.data["telefono"],
+                                            matricula = request.data["matricula"],
+                                            fecha_nacimiento = request.data["fecha_nacimiento"],
+                                            curp = request.data["curp"].upper(),
+                                            rfc = request.data["rfc"].upper(),
+                                            edad = request.data["edad"],
+                                            telefono = request.data["telefono"],
                                             ocupacion= request.data["ocupacion"])
             alumno.save()
 
             return Response({"alumno_created_id": alumno.id }, 201)
 
         return Response(user.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class AlumnosViewEdit(generics.CreateAPIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    
+    def get(self, request, *args, **kwargs):
+        alumnos = Alumnos.objects.filter(user__is_active = 1).order_by("id")
+        lista_alumnos= AlumnoSerializer(alumnos, many=True).data
+        total_alumnos = len(lista_alumnos)
+        
+        return Response({ 'alumnos': total_alumnos }, 200)
+        
+    def put(self, request, *args, **kwargs):
+        alumno = get_object_or_404(Alumnos, id=request.data["id"])
+        alumno.matricula = request.data["matricula"]
+        alumno.telefono = request.data["telefono"]
+        alumno.rfc = request.data["rfc"]
+        alumno.edad = request.data["edad"]
+        alumno.curp = request.data["curp"]
+        alumno.fecha_nacimiento = request.data["fecha_nacimiento"]
+        alumno.ocupacion = request.data["ocupacion"]
+        alumno.save()
+
+        temp = alumno.user
+        temp.first_name = request.data["first_name"]
+        temp.last_name = request.data["last_name"]
+        temp.save()
+
+        user = AlumnoSerializer(alumno, many=False).data
+        return Response(user, 200)
+
+    # Eliminar un alumno
+    def delete(self, request, *args, **kwargs):
+        alumno = get_object_or_404(Alumnos, id=request.GET.get("id"))
+        try:
+            alumno.user.delete()
+            return Response({"details": "Alumno eliminado"}, 200)
+        except Exception as e:
+            return Response({"details": "Algo pasó al eliminar"}, 400)

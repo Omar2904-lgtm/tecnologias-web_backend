@@ -29,6 +29,7 @@ from django.template.loader import render_to_string
 import string
 import random
 
+
 class CustomAuthToken(ObtainAuthToken):
 
     def post(self, request, *args, **kwargs):
@@ -47,7 +48,7 @@ class CustomAuthToken(ObtainAuthToken):
 
             #Esta función genera la clave dinámica (token) para iniciar sesión
             token, created = Token.objects.get_or_create(user=user)
-
+            print(role_names)
             if role_names == 'alumno':
                 alumno = Alumnos.objects.filter(user=user).first()
                 alumno = AlumnoSerializer(alumno).data

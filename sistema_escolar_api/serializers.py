@@ -2,6 +2,8 @@ from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 from sistema_escolar_api.models import *
 
+
+
 class UserSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     first_name = serializers.CharField(required=True)
@@ -18,14 +20,20 @@ class AdminSerializer(serializers.ModelSerializer):
         model = Administradores
         fields = '__all__'
 
+#ALUMNO
+
 class AlumnoSerializer(serializers.ModelSerializer):
     user=UserSerializer(read_only=True)
     class Meta:
         model = Alumnos
-        fields = "__all__"
+        fields = '__all__'
+
+#MAESTRO 
 
 class MaestroSerializer(serializers.ModelSerializer):
     user=UserSerializer(read_only=True)
     class Meta:
         model = Maestros
         fields = '__all__'
+
+
