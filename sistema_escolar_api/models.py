@@ -57,5 +57,51 @@ class Maestros(models.Model):
     creation = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     update = models.DateTimeField(null=True, blank=True)
 
+
+class Evento(models.Model):
+    TIPO_EVENTO_CHOICES = [ # [cite: 11]
+        ('Conferencia', 'Conferencia'), # [cite: 12]
+        ('Taller', 'Taller'), # [cite: 12]
+        ('Seminario', 'Seminario'), # [cite: 12]
+        ('Concurso', 'Concurso'), # [cite: 12]
+    ]
+
+    # Opciones para el campo 'programa_educativo'
+    PROGRAMA_EDUCATIVO_CHOICES = [ # [cite: 7]
+        ('ICC', 'Ingeniería en Ciencias de la Computación'), # [cite: 7]
+        ('LCC', 'Licenciatura en Ciencias de la Computación'), # [cite: 7]
+        ('ITI', 'Ingeniería en Tecnologías de la Información'), # [cite: 7]
+    ]
+
+    nombre = models.CharField(max_length=100)
+    tipo = models.CharField(max_length=50, choices=TIPO_EVENTO_CHOICES)
+    fecha = models.DateField()
+    hora_inicio = models.TimeField()
+    hora_fin = models.TimeField()
+    lugar = models.CharField(max_length=100)
+
+    publico_objetivo = models.JSONField(default=list) # default=list es una buena práctica
+
+    programa_educativo = models.CharField(
+        max_length=100, # O considera un max_length más corto si guardas claves como 'ICC'
+        choices=PROGRAMA_EDUCATIVO_CHOICES,
+        blank=True,
+        null=True
+    )
+
+    responsable = models.ForeignKey(
+        settings.AUTH_USER_MODEL, # o 'User' si lo importaste directamente
+        on_delete=models.SET_NULL,
+        null=True
+    )
+
+    descripcion = models.TextField(max_length=300) # Límite máximo de 300 caracteres. [cite: 20]
+    cupo_maximo = models.PositiveIntegerField() # Solo números enteros positivos. [cite: 22] El límite de 3 dígitos se valida en el form/serializer. [cite: 22]
+
     def __str__(self):
         return "Perfil del maestro "+self.first_name+" "+self.last_name
+    
+
+class Meta:
+        verbose_name = "Evento Académico"
+        verbose_name_plural = "Eventos Académicos"

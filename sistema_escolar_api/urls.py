@@ -1,55 +1,40 @@
 """point_experts_api URL Configuration
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/2.2/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
+# ... (docstring) ...
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include # Solo una vez path, include
+from rest_framework.routers import DefaultRouter
+
+# Importaciones de vistas desde el views.py de la app/proyecto
 from sistema_escolar_api.views import bootstrap
 from sistema_escolar_api.views import users
 from sistema_escolar_api.views import alumnos
 from sistema_escolar_api.views import maestros
 from sistema_escolar_api.views import auth
+from sistema_escolar_api.views import EventoViewSet # Cambiado de '.views' a 'sistema_escolar_api.views' para consistencia
 
-
- 
+router_eventos = DefaultRouter()
+router_eventos.register(r'eventos', EventoViewSet, basename='evento')
 
 urlpatterns = [
     #Version
-        path('bootstrap/version', bootstrap.VersionView.as_view()),
-    #Create Admin
-        path('admin/', users.AdminView.as_view()),
-    #Admin Data
-        path('lista-admins/', users.AdminAll.as_view()),
-    #Edit Admin
-        path('admins-edit/', users.AdminViewEdit.as_view()),
-
-    #Create Alumnos
-        path('alumnos/', alumnos.AlumnosView.as_view()),
-
-    #Alumno Data
-        path('lista-alumnos/', alumnos.AlumnosAll.as_view()),
-
-        path('alumnos-edit/', alumnos.AlumnosViewEdit.as_view()),
-    #Create Mestros 
-        path('maestros/', maestros.MaestrosView.as_view()),
-    #Maestro Data
-        path('lista-maestros/', maestros.MaestrosAll.as_view()),
-        
-        path('maestros-edit/', maestros.MaestrosViewEdit.as_view(), name='maestros-edit'),
-
-    #Login
-        path('token/', auth.CustomAuthToken.as_view()),
-    #Logout
-        path('logout/', auth.Logout.as_view())
+    path('bootstrap/version', bootstrap.VersionView.as_view()),
+    #Admin
+    path('admin/', users.AdminView.as_view()), # Considera renombrar este 'admin/' si usas el admin de Django
+                                               # Por ejemplo: path('django-admin-site/', admin.site.urls),
+    path('lista-admins/', users.AdminAll.as_view()),
+    path('admins-edit/', users.AdminViewEdit.as_view()),
+    #Alumnos
+    path('alumnos/', alumnos.AlumnosView.as_view()),
+    path('lista-alumnos/', alumnos.AlumnosAll.as_view()),
+    path('alumnos-edit/', alumnos.AlumnosViewEdit.as_view()),
+    #Maestros 
+    path('maestros/', maestros.MaestrosView.as_view()),
+    path('lista-maestros/', maestros.MaestrosAll.as_view()),
+    path('maestros-edit/', maestros.MaestrosViewEdit.as_view(), name='maestros-edit'),
+    #Auth
+    path('token/', auth.CustomAuthToken.as_view()),
+    path('logout/', auth.Logout.as_view()),
+    #Eventos API
+    path('api/', include(router_eventos.urls)),
 ]
